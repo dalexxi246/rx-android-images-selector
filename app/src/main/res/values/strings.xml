@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Image Selector</string>
+    <string name="label_select">Select</string>
+    <string name="label_ignore">Ignore</string>
+</resources>
