@@ -1,0 +1,76 @@
+{
+    "companies": [
+        {
+            "id": 1,
+            "name": "Microsoft",
+            "url": "?microsoft",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 2,
+            "name": "Facebook",
+            "url": "?facebook",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 3,
+            "name": "Instagram",
+            "url": "?instagram",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 4,
+            "name": "LinkedIn",
+            "url": "?linkedin",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 5,
+            "name": "Uber",
+            "url": "?uber",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 6,
+            "name": "Yahoo",
+            "url": "?yahoo",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 7,
+            "name": "Twitter",
+            "url": "?twitter",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 8,
+            "name": "Spotify",
+            "url": "?spotify",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 9,
+            "name": "Amazon",
+            "url": "?amazon",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 10,
+            "name": "Snapchat",
+            "url": "?snapchat",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 11,
+            "name": "Google",
+            "url": "?google",
+            "dateAdded": "2011-09-23"
+        },
+        {
+            "id": 10,
+            "name": "Whatsapp",
+            "url": "?whatsapp",
+            "dateAdded": "2011-09-23"
+        }
+    ]
+}
