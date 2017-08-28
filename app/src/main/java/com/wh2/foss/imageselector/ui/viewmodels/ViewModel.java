@@ -1,20 +1,43 @@
 package com.wh2.foss.imageselector.ui.viewmodels;
 
 import android.content.Context;
+import android.databinding.BaseObservable;
+import android.databinding.PropertyChangeRegistry;
 
-/**
- * Created by wilmerh on 8/25/17.
- */
+public class ViewModel extends BaseObservable {
 
-public class ViewModel {
+    private Context context;
 
-    Context context;
+    private transient PropertyChangeRegistry propertyChangeRegistry = new PropertyChangeRegistry();
 
-    public ViewModel(Context context) {
+    ViewModel(Context context) {
         this.context = context;
     }
 
-    public String getStringFromResource(int resourceId) {
+    public String getString(int resourceId) {
         return context.getString(resourceId);
+    }
+
+    void notifyChange(int propertyId) {
+        if (propertyChangeRegistry == null) {
+            propertyChangeRegistry = new PropertyChangeRegistry();
+        }
+        propertyChangeRegistry.notifyChange(this, propertyId);
+    }
+
+    @Override
+    public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        if (propertyChangeRegistry == null) {
+            propertyChangeRegistry = new PropertyChangeRegistry();
+        }
+        propertyChangeRegistry.add(callback);
+
+    }
+
+    @Override
+    public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+        if (propertyChangeRegistry != null) {
+            propertyChangeRegistry.remove(callback);
+        }
     }
 }
