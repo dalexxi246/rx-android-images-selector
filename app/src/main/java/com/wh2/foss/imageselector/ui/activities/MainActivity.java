@@ -1,22 +1,30 @@
 package com.wh2.foss.imageselector.ui.activities;
 
 import android.databinding.DataBindingUtil;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ActivityMainBinding;
+import com.wh2.foss.imageselector.model.Company;
+import com.wh2.foss.imageselector.model.Config;
 import com.wh2.foss.imageselector.ui.adapters.ImagesAdapter;
 import com.wh2.foss.imageselector.ui.viewmodels.ActivityViewModel;
 import com.wh2.foss.imageselector.ui.viewmodels.ImageViewModel;
 
-public class MainActivity extends AppCompatActivity implements ImagesAdapter.OnItemClickListener{
+import java.util.List;
+
+import io.reactivex.disposables.CompositeDisposable;
+
+public class MainActivity extends AppCompatActivity {
 
     ActivityViewModel viewModel;
     ActivityMainBinding binding;
 
     ImagesAdapter adapter;
+
+    CompositeDisposable subscriptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,34 +34,42 @@ public class MainActivity extends AppCompatActivity implements ImagesAdapter.OnI
 
         viewModel = new ActivityViewModel(this);
         binding.setVm(viewModel);
-
-        setRecyclerView();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        subscriptions.add(
+                viewModel.getConfigurations()
+                .subscribe(config -> viewModel.getCompanies().subscribe(companies -> setRecyclerView(config, companies))));
     }
 
-    private void setRecyclerView() {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        subscriptions.clear();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        subscriptions.dispose();
+    }
+
+    private void setRecyclerView(Config config, List<Company> companies) {
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        adapter = new ImagesAdapter(this);
-        adapter.setListener(this);
+        adapter = new ImagesAdapter(companies, config, this);
+        subscriptions.add(adapter.companySelected().subscribe(this::companySelected));
+        subscriptions.add(adapter.companyIgnored().subscribe(this::companyIgnored));
         binding.recyclerView.setAdapter(adapter);
     }
 
-    @Override
-    public void onClick(ImageViewModel item) {
+    private void companySelected(ImageViewModel viewModel) {
 
     }
 
-    @Override
-    public void onSelect(ImageViewModel item) {
-
-    }
-
-    @Override
-    public void onIgnore(ImageViewModel item) {
+    private void companyIgnored(ImageViewModel viewModel) {
 
     }
 }
+

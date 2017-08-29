@@ -11,32 +11,31 @@ import com.jakewharton.rxbinding2.view.RxView;
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ItemImageBinding;
 import com.wh2.foss.imageselector.model.Company;
+import com.wh2.foss.imageselector.model.Config;
 import com.wh2.foss.imageselector.ui.viewmodels.ImageViewModel;
 
 import java.util.List;
 
-public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesViewHolder>{
+import io.reactivex.Observable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
 
-    private OnItemClickListener listener;
+public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesViewHolder> {
+
     private List<Company> items;
+    private Config config;
     private Context context;
 
-    public ImagesAdapter(List<Company> items, Context context) {
+    private PublishSubject<ImageViewModel> companySelected = PublishSubject.create();
+    private PublishSubject<ImageViewModel> companyIgnored = PublishSubject.create();
+
+    private CompositeDisposable subscriptions = new CompositeDisposable();
+
+    public ImagesAdapter(List<Company> items, Config config, Context context) {
         this.items = items;
+        this.config = config;
         this.context = context;
-    }
-
-    public ImagesAdapter(Context context) {
-        this.context = context;
-    }
-
-    public void setListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
-
-    public void setItems(List<Company> items) {
-        this.items = items;
-        notifyDataSetChanged();
     }
 
     @Override
@@ -47,27 +46,21 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
 
     @Override
     public void onBindViewHolder(ImagesViewHolder holder, int position) {
-        ImageViewModel viewModel = new ImageViewModel(context, items.get(position));
+        ImageViewModel viewModel = new ImageViewModel(context, items.get(position), config);
         holder.bind(viewModel);
-        ItemImageBinding binding = holder.getBinding();
+    }
 
-        RxView.clicks(binding.getRoot()).subscribe(o -> {
-            if (listener != null){
-                listener.onClick(viewModel);
-            }
-        });
+    @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        subscriptions.dispose();
+    }
 
-        RxView.clicks(binding.buttonSelect).subscribe(o -> {
-            if (listener != null){
-                listener.onSelect(viewModel);
-            }
-        });
+    public Observable<ImageViewModel> companySelected() {
+        return companySelected.hide();
+    }
 
-        RxView.clicks(binding.buttonIgnore).subscribe(o -> {
-            if (listener != null){
-                listener.onIgnore(viewModel);
-            }
-        });
+    public Observable<ImageViewModel> companyIgnored() {
+        return companyIgnored.hide();
     }
 
     @Override
@@ -78,26 +71,33 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
     class ImagesViewHolder extends RecyclerView.ViewHolder {
 
         private ItemImageBinding binding;
+        Disposable companySelectedSubscription;
+        Disposable companyIgnoredSubscription;
 
         ImagesViewHolder(View itemView) {
             super(itemView);
             binding = DataBindingUtil.bind(itemView);
         }
 
-        ItemImageBinding getBinding() {
-            return binding;
-        }
-
-        void bind(ImageViewModel viewModel){
+        void bind(ImageViewModel viewModel) {
             binding.setImage(viewModel);
             binding.executePendingBindings();
+            ImageViewModel.loadImage(binding.imageView, viewModel.getImageMediumUrl());
+            manageSubscriptions(viewModel);
         }
-    }
 
-    public interface OnItemClickListener {
-        void onClick(ImageViewModel item);
-        void onSelect(ImageViewModel item);
-        void onIgnore(ImageViewModel item);
+        private void manageSubscriptions(ImageViewModel viewModel) {
+            if (companySelectedSubscription != null && !companySelectedSubscription.isDisposed()) {
+                companySelectedSubscription.dispose();
+            }
+            if (companyIgnoredSubscription != null && !companyIgnoredSubscription.isDisposed()) {
+                companyIgnoredSubscription.dispose();
+            }
+            companySelectedSubscription = RxView.clicks(binding.buttonSelect).subscribe(o -> companySelected.onNext(viewModel));
+            companyIgnoredSubscription = RxView.clicks(binding.buttonIgnore).subscribe(o -> companyIgnored.onNext(viewModel));
+            subscriptions.add(companySelectedSubscription);
+            subscriptions.add(companyIgnoredSubscription);
+        }
     }
 
 }
