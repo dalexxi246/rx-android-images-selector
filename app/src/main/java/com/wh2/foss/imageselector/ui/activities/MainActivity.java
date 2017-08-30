@@ -9,9 +9,11 @@ import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ActivityMainBinding;
 import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
+import com.wh2.foss.imageselector.model.downloads.Progress;
 import com.wh2.foss.imageselector.ui.adapters.ImagesAdapter;
 import com.wh2.foss.imageselector.ui.viewmodels.ActivityViewModel;
 import com.wh2.foss.imageselector.ui.viewmodels.ImageViewModel;
+import com.wh2.foss.imageselector.utils.FilesHelper;
 
 import java.util.List;
 
@@ -19,29 +21,36 @@ import io.reactivex.disposables.CompositeDisposable;
 
 public class MainActivity extends AppCompatActivity {
 
-    ActivityViewModel viewModel;
+    ActivityViewModel activityViewModel;
     ActivityMainBinding binding;
+
+    private String dirPath;
+    private String fileName;
 
     ImagesAdapter adapter;
 
-    CompositeDisposable subscriptions;
+    CompositeDisposable subscriptions = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-
-        viewModel = new ActivityViewModel(this);
-        binding.setVm(viewModel);
+        activityViewModel = new ActivityViewModel(this);
+        binding.setVm(activityViewModel);
+        dirPath = new FilesHelper(this).getDirectoryPath();
+        fileName = "foss_company.jpg";
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        subscriptions.add(
-                viewModel.getConfigurations()
-                .subscribe(config -> viewModel.getCompanies().subscribe(companies -> setRecyclerView(config, companies))));
+        subscriptions.add(activityViewModel.getConfigurations().subscribe(
+                config -> subscriptions.add(activityViewModel.getCompanies().subscribe(
+                        companies -> setRecyclerView(config, companies),
+                        this::onError)),
+                this::onError)
+        );
     }
 
     @Override
@@ -64,11 +73,28 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerView.setAdapter(adapter);
     }
 
-    private void companySelected(ImageViewModel viewModel) {
+    private void companySelected(ImageViewModel imageViewModel) {
+        subscriptions.add(imageViewModel.performDownload(dirPath, fileName).subscribe(
+                this::setupProgress,
+                this::onError,
+                this::onDownloadComplete,
+                disposable -> activityViewModel.setProgressShowing(true)
+        ));
+    }
+
+    private void onError(Throwable throwable) {
 
     }
 
-    private void companyIgnored(ImageViewModel viewModel) {
+    private void setupProgress(Progress progress) {
+        activityViewModel.setProgress(progress.getPercentDownloaded());
+    }
+
+    private void onDownloadComplete() {
+        activityViewModel.setProgressShowing(false);
+    }
+
+    private void companyIgnored(ImageViewModel imageViewModel) {
 
     }
 }

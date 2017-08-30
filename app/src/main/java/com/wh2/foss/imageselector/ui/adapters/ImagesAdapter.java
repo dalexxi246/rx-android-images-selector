@@ -82,7 +82,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
         void bind(ImageViewModel viewModel) {
             binding.setImage(viewModel);
             binding.executePendingBindings();
-            ImageViewModel.loadImage(binding.imageView, viewModel.getImageMediumUrl());
+            ImageViewModel.loadImage(binding.imageView, viewModel.getMediumImageUrl());
             manageSubscriptions(viewModel);
         }
 

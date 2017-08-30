@@ -6,8 +6,13 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.wh2.foss.imageselector.BR;
+import com.wh2.foss.imageselector.api.ImagesDownloader;
 import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
+import com.wh2.foss.imageselector.model.downloads.DownloadPaths;
+import com.wh2.foss.imageselector.model.downloads.Progress;
+
+import io.reactivex.Observable;
 
 public class ImageViewModel extends ViewModel {
 
@@ -34,13 +39,20 @@ public class ImageViewModel extends ViewModel {
         notifyChange(BR.company);
     }
 
-    public String getImageSmallUrl() {
-        return String.format("%s/%s/%s", config.getUrlBase(), config.getDimensions().getSmall(), company.getUrl());
+    private String getImageUrl(String dimensions) {
+        return String.format("%s/%s/%s", config.getUrlBase(), dimensions, company.getUrl());
     }
 
-    public String getImageMediumUrl() {
-        return String.format("%s/%s/%s", config.getUrlBase(), config.getDimensions().getMedium(), company.getUrl());
+    public String getMediumImageUrl() {
+        return getImageUrl(config.getDimensions().getMedium());
     }
 
-    // TODO: 8/29/17 Guardar imagenes en Bitmap (https://github.com/esafirm/RxDownloader)
+    private String getSmallImageUrl() {
+        return getImageUrl(config.getDimensions().getSmall());
+    }
+
+    public Observable<Progress> performDownload(String dirName, String fileName) {
+        DownloadPaths downloadPaths = new DownloadPaths(getSmallImageUrl(), dirName, fileName);
+        return new ImagesDownloader(downloadPaths).getProgressStream();
+    }
 }

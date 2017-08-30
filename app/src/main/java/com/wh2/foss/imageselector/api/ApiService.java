@@ -5,17 +5,16 @@ import com.wh2.foss.imageselector.model.Config;
 
 import java.util.List;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import retrofit2.http.GET;
 
 public interface ApiService {
 
-    String BASE_URL = "http://localhost:3000";
+    String BASE_URL = "http://192.168.1.56:3000";
 
     @GET("/config")
     Single<Config> getConfigurations();
 
     @GET("/companies")
-    Observable<List<Company>> getCompanies();
+    Single<List<Company>> getCompanies();
 }
