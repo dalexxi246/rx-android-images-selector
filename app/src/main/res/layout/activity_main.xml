@@ -9,6 +9,8 @@
             name="vm"
             type="com.wh2.foss.imageselector.ui.viewmodels.ActivityViewModel" />
 
+        <import type="android.view.View" />
+
     </data>
 
     <android.support.constraint.ConstraintLayout

@@ -2,10 +2,10 @@ package com.wh2.foss.imageselector.ui.viewmodels;
 
 import android.content.Context;
 import android.databinding.Bindable;
+import android.databinding.BindingAdapter;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.wh2.foss.imageselector.BR;
 import com.wh2.foss.imageselector.api.ImagesDownloader;
 import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
@@ -25,24 +25,16 @@ public class ImageViewModel extends ViewModel {
         this.config = config;
     }
 
+    @BindingAdapter("app:imageUrl")
     public static void loadImage(ImageView view, String url) {
         Glide.with(view.getContext()).load(url).into(view);
-    }
-
-    @Bindable
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-        notifyChange(BR.company);
     }
 
     private String getImageUrl(String dimensions) {
         return String.format("%s/%s/%s", config.getUrlBase(), dimensions, company.getUrl());
     }
 
+    @Bindable
     public String getMediumImageUrl() {
         return getImageUrl(config.getDimensions().getMedium());
     }

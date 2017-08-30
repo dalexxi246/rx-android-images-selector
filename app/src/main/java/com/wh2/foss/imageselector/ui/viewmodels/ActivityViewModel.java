@@ -1,11 +1,10 @@
 package com.wh2.foss.imageselector.ui.viewmodels;
 
 import android.content.Context;
-import android.databinding.Bindable;
-import android.databinding.Observable;
+import android.databinding.ObservableBoolean;
+import android.databinding.ObservableInt;
 import android.view.View;
 
-import com.wh2.foss.imageselector.BR;
 import com.wh2.foss.imageselector.api.ApiClient;
 import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
@@ -17,13 +16,15 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class ActivityViewModel extends ViewModel implements Observable {
+public class ActivityViewModel extends ViewModel {
 
-    private int progress;
-    private boolean progressShowing;
+    public final ObservableBoolean progressShowing;
+    public final ObservableInt progress;
 
     public ActivityViewModel(Context context) {
         super(context);
+        progressShowing = new ObservableBoolean();
+        progress = new ObservableInt(0);
     }
 
     public Single<Config> getConfigurations() {
@@ -43,22 +44,11 @@ public class ActivityViewModel extends ViewModel implements Observable {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    @Bindable
-    public int getProgress() {
-        return progress;
-    }
-
     public void setProgress(int progress) {
-        this.progress = progress;
-        notifyChange(BR.progress);
+        this.progress.set(progress);
     }
 
-    @Bindable
     public int getProgressShowing() {
-        return progressShowing ? View.VISIBLE : View.GONE;
-    }
-
-    public void setProgressShowing(boolean progressShowing) {
-        this.progressShowing = progressShowing;
+        return progressShowing.get() ? View.VISIBLE : View.GONE;
     }
 }

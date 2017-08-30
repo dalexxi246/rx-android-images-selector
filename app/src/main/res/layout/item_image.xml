@@ -31,11 +31,13 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:contentDescription="@string/access_image"
+                android:scaleType="fitCenter"
+                app:imageUrl="@{image.mediumImageUrl}"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@android:color/holo_blue_bright"
-                android:contentDescription="@string/access_image" />
+                app:srcCompat="@android:color/holo_blue_bright" />
 
             <Button
                 android:id="@+id/button_select"

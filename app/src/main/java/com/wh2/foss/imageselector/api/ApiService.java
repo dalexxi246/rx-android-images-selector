@@ -5,8 +5,10 @@ import com.wh2.foss.imageselector.model.Config;
 
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 
 public interface ApiService {
 
@@ -17,4 +19,7 @@ public interface ApiService {
 
     @GET("/companies")
     Single<List<Company>> getCompanies();
+
+    @PATCH("/companies/{id}")
+    Completable ignoreCompany();
 }

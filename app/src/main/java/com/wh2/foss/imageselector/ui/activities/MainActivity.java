@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.TextUtils;
 
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ActivityMainBinding;
@@ -79,12 +80,14 @@ public class MainActivity extends AppCompatActivity {
                 this::setupProgress,
                 this::onError,
                 this::onDownloadComplete,
-                disposable -> activityViewModel.setProgressShowing(true)
+                disposable -> activityViewModel.progressShowing.set(true)
         ));
     }
 
     private void onError(Throwable throwable) {
-        Snackbar.make(binding.getRoot(), "Error", Snackbar.LENGTH_LONG).show();
+        if (!TextUtils.isEmpty(throwable.getLocalizedMessage())){
+            Snackbar.make(binding.getRoot(), throwable.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+        }
     }
 
     private void setupProgress(Progress progress) {
@@ -92,11 +95,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onDownloadComplete() {
-        activityViewModel.setProgressShowing(false);
+        activityViewModel.progressShowing.set(false);
+        Snackbar.make(binding.getRoot(), "Download Complete", Snackbar.LENGTH_LONG).show();
     }
 
     private void companyIgnored(ImageViewModel imageViewModel) {
-
+        // TODO: 8/30/17 Enviar por servicio un PATCH con el campo "ignored:true"
     }
 }
 

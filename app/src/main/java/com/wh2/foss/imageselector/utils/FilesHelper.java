@@ -27,32 +27,12 @@ public class FilesHelper {
         return getAlbumStorageDir(IMAGES_FOLDER).getParent();
     }
 
-    public String saveFingerprintImage(String newFileName, Bitmap path) throws IOException {
-        if (!isExternalStorageWritable()) {
-            return "";
-        }
-        File dirImages = getAlbumStorageDir(IMAGES_FOLDER);
-        File noMedia = new File(dirImages, NO_MEDIA);
-        File myPath = new File(dirImages, newFileName + IMAGES_EXTENSION);
-
-        FileOutputStream fosNoMedia = new FileOutputStream(noMedia);
-        fosNoMedia.flush();
-
-        FileOutputStream fosImg = new FileOutputStream(myPath);
-        path.compress(Bitmap.CompressFormat.PNG, 60, fosImg);
-        fosImg.flush();
-
-        return myPath.getAbsolutePath();
-    }
-
-    /* Checks if external storage is available for read and write */
     private boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equals(state);
     }
 
     private File getAlbumStorageDir(String albumName) {
-        // Get the directory for the user's public pictures directory.
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), albumName);
         if (!file.mkdirs()) {
             Log.e("PIC_ERROR", "Directory not created");

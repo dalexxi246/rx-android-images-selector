@@ -12,72 +12,84 @@
             "id": 1,
             "name": "Microsoft",
             "url": "?microsoft",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 2,
             "name": "Facebook",
             "url": "?facebook",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 3,
             "name": "Instagram",
             "url": "?instagram",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 4,
             "name": "LinkedIn",
             "url": "?linkedin",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 5,
             "name": "Uber",
             "url": "?uber",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 6,
             "name": "Yahoo",
             "url": "?yahoo",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 7,
             "name": "Twitter",
             "url": "?twitter",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 8,
             "name": "Spotify",
             "url": "?spotify",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 9,
             "name": "Amazon",
             "url": "?amazon",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 10,
             "name": "Snapchat",
             "url": "?snapchat",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 11,
             "name": "Google",
             "url": "?google",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         },
         {
             "id": 10,
             "name": "Whatsapp",
             "url": "?whatsapp",
+            "ignored": false,
             "dateAdded": "2011-09-23"
         }
     ]
