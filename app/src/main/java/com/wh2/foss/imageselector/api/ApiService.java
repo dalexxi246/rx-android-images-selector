@@ -10,7 +10,7 @@ import retrofit2.http.GET;
 
 public interface ApiService {
 
-    String BASE_URL = "http://192.168.1.56:3000";
+    String BASE_URL = "http://127.0.0.1:3000";
 
     @GET("/config")
     Single<Config> getConfigurations();

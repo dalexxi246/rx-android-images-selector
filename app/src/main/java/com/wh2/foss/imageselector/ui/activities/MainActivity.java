@@ -2,6 +2,7 @@ package com.wh2.foss.imageselector.ui.activities;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onError(Throwable throwable) {
-
+        Snackbar.make(binding.getRoot(), "Error", Snackbar.LENGTH_LONG).show();
     }
 
     private void setupProgress(Progress progress) {
