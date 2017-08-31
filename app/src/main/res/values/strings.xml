@@ -6,5 +6,9 @@
     <string name="message_ok">OK</string>
     <string name="message_invalid_host">Host invalid</string>
     <string name="message_download_complete">Download Complete</string>
-    <string name="message_company_ignored">Ignored company</string>
+    <string name="message_picture_ignored">Picture ignored</string>
+    <string name="message_download_started">Download Started</string>
+    <string name="message_ignore_fails">Can\'t ignore this Image: %s</string>
+    <string name="message_get_configs_fails">Can\'t connect to host</string>
+    <string name="message_get_pictures_fails">Can\'t get images</string>
 </resources>

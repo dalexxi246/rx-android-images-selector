@@ -6,8 +6,8 @@ import android.databinding.ObservableInt;
 import android.view.View;
 
 import com.wh2.foss.imageselector.api.ApiClient;
-import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
+import com.wh2.foss.imageselector.model.Image;
 
 import java.util.concurrent.TimeUnit;
 
@@ -35,12 +35,12 @@ public class ActivityViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public Observable<Company> getCompanies() {
+    public Observable<Image> getPictures() {
         return ApiClient
                 .getAPI()
-                .getCompanies()
+                .getPictures()
                 .flatMap(Observable::fromIterable)
-                .filter(Company::isIgnored)
+                .filter(picture -> !picture.isIgnored())
                 .delay(100, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

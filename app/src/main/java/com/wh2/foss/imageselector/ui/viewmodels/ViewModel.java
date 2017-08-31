@@ -3,7 +3,7 @@ package com.wh2.foss.imageselector.ui.viewmodels;
 import android.content.Context;
 import android.databinding.BaseObservable;
 
-public class ViewModel extends BaseObservable {
+class ViewModel extends BaseObservable {
 
     private Context context;
 
@@ -11,7 +11,11 @@ public class ViewModel extends BaseObservable {
         this.context = context;
     }
 
-    public String getString(int resourceId) {
+    String getString(int resourceId) {
         return context.getString(resourceId);
+    }
+
+    String getString(int resourceFormatID, String... placeholders) {
+        return context.getString(resourceFormatID, placeholders);
     }
 }

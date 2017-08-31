@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import com.jakewharton.rxbinding2.view.RxView;
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ItemImageBinding;
-import com.wh2.foss.imageselector.model.Company;
+import com.wh2.foss.imageselector.model.Image;
 import com.wh2.foss.imageselector.model.Config;
 import com.wh2.foss.imageselector.ui.viewmodels.ImageViewModel;
 
@@ -23,16 +23,16 @@ import io.reactivex.subjects.PublishSubject;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesViewHolder> {
 
-    private List<Company> items;
+    private List<Image> items;
     private Config config;
     private Context context;
 
-    private PublishSubject<ImageViewModel> companySelected = PublishSubject.create();
-    private PublishSubject<ImageViewModel> companyIgnored = PublishSubject.create();
+    private PublishSubject<ImageViewModel> imageSelected = PublishSubject.create();
+    private PublishSubject<ImageViewModel> imageIgnored = PublishSubject.create();
 
     private CompositeDisposable subscriptions = new CompositeDisposable();
 
-    public ImagesAdapter(List<Company> items, Config config, Context context) {
+    public ImagesAdapter(List<Image> items, Config config, Context context) {
         this.items = items;
         this.config = config;
         this.context = context;
@@ -55,12 +55,12 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
         subscriptions.dispose();
     }
 
-    public Observable<ImageViewModel> companySelected() {
-        return companySelected.hide();
+    public Observable<ImageViewModel> imageSelected() {
+        return imageSelected.hide();
     }
 
-    public Observable<ImageViewModel> companyIgnored() {
-        return companyIgnored.hide();
+    public Observable<ImageViewModel> imageIgnored() {
+        return imageIgnored.hide();
     }
 
     @Override
@@ -68,16 +68,16 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
         return items.size();
     }
 
-    public void addItem(Company company) {
-        this.items.add(company);
+    public void addItem(Image image) {
+        this.items.add(image);
         notifyDataSetChanged();
     }
 
     class ImagesViewHolder extends RecyclerView.ViewHolder {
 
         private ItemImageBinding binding;
-        Disposable companySelectedSubscription;
-        Disposable companyIgnoredSubscription;
+        Disposable imageSelectedSubscription;
+        Disposable imageIgnoredSubscription;
 
         ImagesViewHolder(View itemView) {
             super(itemView);
@@ -91,16 +91,16 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
         }
 
         private void manageSubscriptions(ImageViewModel viewModel) {
-            if (companySelectedSubscription != null && !companySelectedSubscription.isDisposed()) {
-                companySelectedSubscription.dispose();
+            if (imageSelectedSubscription != null && !imageSelectedSubscription.isDisposed()) {
+                imageSelectedSubscription.dispose();
             }
-            if (companyIgnoredSubscription != null && !companyIgnoredSubscription.isDisposed()) {
-                companyIgnoredSubscription.dispose();
+            if (imageIgnoredSubscription != null && !imageIgnoredSubscription.isDisposed()) {
+                imageIgnoredSubscription.dispose();
             }
-            companySelectedSubscription = RxView.clicks(binding.buttonSelect).subscribe(o -> companySelected.onNext(viewModel));
-            companyIgnoredSubscription = RxView.clicks(binding.buttonIgnore).subscribe(o -> companyIgnored.onNext(viewModel));
-            subscriptions.add(companySelectedSubscription);
-            subscriptions.add(companyIgnoredSubscription);
+            imageSelectedSubscription = RxView.clicks(binding.buttonSelect).subscribe(o -> imageSelected.onNext(viewModel));
+            imageIgnoredSubscription = RxView.clicks(binding.buttonIgnore).subscribe(o -> imageIgnored.onNext(viewModel));
+            subscriptions.add(imageSelectedSubscription);
+            subscriptions.add(imageIgnoredSubscription);
         }
     }
 

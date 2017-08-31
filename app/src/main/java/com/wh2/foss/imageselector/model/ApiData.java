@@ -1,18 +1,19 @@
 
 package com.wh2.foss.imageselector.model;
 
-import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
 
 public class ApiData {
 
     @SerializedName("config")
     @Expose
     private Config config;
-    @SerializedName("companies")
+    @SerializedName("pictures")
     @Expose
-    private List<Company> companies = null;
+    private List<Image> pictures = null;
 
     public Config getConfig() {
         return config;
@@ -22,12 +23,12 @@ public class ApiData {
         this.config = config;
     }
 
-    public List<Company> getCompanies() {
-        return companies;
+    public List<Image> getPictures() {
+        return pictures;
     }
 
-    public void setCompanies(List<Company> companies) {
-        this.companies = companies;
+    public void setPictures(List<Image> pictures) {
+        this.pictures = pictures;
     }
 
 }

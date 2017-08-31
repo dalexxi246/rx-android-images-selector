@@ -4,7 +4,7 @@ package com.wh2.foss.imageselector.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Company {
+public class Image {
 
     @SerializedName("id")
     @Expose

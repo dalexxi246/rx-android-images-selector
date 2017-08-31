@@ -1,6 +1,6 @@
 package com.wh2.foss.imageselector.api;
 
-import com.wh2.foss.imageselector.model.Company;
+import com.wh2.foss.imageselector.model.Image;
 import com.wh2.foss.imageselector.model.Config;
 
 import java.util.List;
@@ -15,14 +15,14 @@ import retrofit2.http.Path;
 
 public interface ApiService {
 
-    String BASE_URL = "http://127.0.0.1:3000";
+    String BASE_URL = "http://192.168.0.109:3000";
 
     @GET("/config")
     Single<Config> getConfigurations();
 
-    @GET("/companies")
-    Observable<List<Company>> getCompanies();
+    @GET("/pictures")
+    Observable<List<Image>> getPictures();
 
-    @PATCH("/companies/{id}")
-    Completable ignoreCompany(@Path("id") int id, @Body Company company);
+    @PATCH("/pictures/{id}")
+    Completable ignorePicture(@Path("id") int id, @Body Image image);
 }

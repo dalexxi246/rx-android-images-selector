@@ -14,8 +14,8 @@ import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.databinding.ActivityMainBinding;
 import com.wh2.foss.imageselector.databinding.DialogHostBinding;
-import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
+import com.wh2.foss.imageselector.model.Image;
 import com.wh2.foss.imageselector.model.downloads.Progress;
 import com.wh2.foss.imageselector.ui.adapters.ImagesAdapter;
 import com.wh2.foss.imageselector.ui.viewmodels.ActivityViewModel;
@@ -25,6 +25,7 @@ import com.wh2.foss.imageselector.utils.FilesHelper;
 import java.util.ArrayList;
 
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         activityViewModel = new ActivityViewModel(this);
         activityMainBinding.setVm(activityViewModel);
 
-        dialogHostBinding = DataBindingUtil.setContentView(this, R.layout.dialog_host);
+        dialogHostBinding = DataBindingUtil.inflate(getLayoutInflater(), R.layout.dialog_host, null, false);
 
         dirPath = new FilesHelper(this).getDirectoryPath();
-        fileName = "foss_company.jpg";
+        fileName = "foss_image.jpg";
     }
 
     public AlertDialog createDialog(View view, boolean cancelable) {
@@ -73,6 +74,12 @@ public class MainActivity extends AppCompatActivity {
         loadData();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        subscriptions.dispose();
+    }
+
     private void loadData() {
         if (dialogHostView != null && dialogHostView.isShowing()) {
             dialogHostView.dismiss();
@@ -81,7 +88,10 @@ public class MainActivity extends AppCompatActivity {
                 activityViewModel.getConfigurations().subscribe(
                         config -> {
                             setRecyclerView(config);
-                            subscriptions.add(activityViewModel.getCompanies().subscribe(this::updateRecyclerView, this::onError));
+                            subscriptions.add(activityViewModel.getPictures().subscribe(
+                                    this::updateRecyclerView,
+                                    this::onError)
+                            );
                         },
                         this::onError)
         );
@@ -94,53 +104,42 @@ public class MainActivity extends AppCompatActivity {
                         .filter(o -> isValidHostAddress())
                         .subscribe(
                                 o -> loadData(),
-                                throwable -> {
-                                }));
+                                throwable -> {}));
         subscriptions.add(
                 RxTextView.textChanges(dialogHostBinding.editText)
                         .subscribe(
                                 o -> dialogHostBinding.textErrorMsg.setText(isValidHostAddress() ? getString(R.string.message_ok) : getString(R.string.message_invalid_host)),
-                                throwable -> {
-                                }));
+                                throwable -> {}));
     }
 
     private boolean isValidHostAddress() {
         return dialogHostBinding != null && dialogHostBinding.editText.getText().toString().matches("\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b");
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        subscriptions.clear();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        subscriptions.dispose();
-    }
-
     private void setRecyclerView(Config config) {
         activityMainBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new ImagesAdapter(new ArrayList<>(), config, this);
-        subscriptions.add(adapter.companySelected().subscribe(this::companySelected));
-        subscriptions.add(adapter.companyIgnored().subscribe(this::companyIgnored));
+        subscriptions.add(adapter.imageSelected().subscribe(this::pictureSelected));
+        subscriptions.add(adapter.imageIgnored().subscribe(this::pictureIgnored));
         activityMainBinding.recyclerView.setAdapter(adapter);
     }
 
-    private void updateRecyclerView(Company company) {
+    private void updateRecyclerView(Image image) {
         if (adapter != null) {
-            adapter.addItem(company);
+            adapter.addItem(image);
         }
     }
 
-    private void companySelected(ImageViewModel imageViewModel) {
-        subscriptions.add(imageViewModel.performDownload(dirPath, fileName).subscribe(
+    private void pictureSelected(ImageViewModel imageViewModel) {
+        Disposable downloadPicture = imageViewModel.performDownload(dirPath, fileName).subscribe(
                 this::setupProgress,
                 this::onError,
                 this::onDownloadComplete,
-                disposable -> activityViewModel.progressShowing.set(true)
-        ));
+                disposable -> showMessage(getString(R.string.message_download_started))
+        );
+        if (!downloadPicture.isDisposed()) {
+            subscriptions.remove(downloadPicture);
+        }
     }
 
     private void onError(Throwable throwable) {
@@ -158,11 +157,11 @@ public class MainActivity extends AppCompatActivity {
         showMessage(getString(R.string.message_download_complete));
     }
 
-    private void companyIgnored(ImageViewModel imageViewModel) {
-        subscriptions.add(imageViewModel.ignoreCompany().subscribe(() -> {
+    private void pictureIgnored(ImageViewModel imageViewModel) {
+        subscriptions.add(imageViewModel.ignorePicture().subscribe(() -> {
             loadData();
-            showMessage(getString(R.string.message_company_ignored));
-        }));
+            showMessage(getString(R.string.message_picture_ignored));
+        }, this::onError));
     }
 
     private void showMessage(String message) {
