@@ -9,9 +9,9 @@ import com.wh2.foss.imageselector.api.ApiClient;
 import com.wh2.foss.imageselector.model.Company;
 import com.wh2.foss.imageselector.model.Config;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -35,10 +35,12 @@ public class ActivityViewModel extends ViewModel {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public Single<List<Company>> getCompanies() {
+    public Observable<Company> getCompanies() {
         return ApiClient
                 .getAPI()
                 .getCompanies()
+                .flatMap(Observable::fromIterable)
+                .filter(Company::isIgnored)
                 .delay(100, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

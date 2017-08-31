@@ -68,6 +68,11 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImagesView
         return items.size();
     }
 
+    public void addItem(Company company) {
+        this.items.add(company);
+        notifyDataSetChanged();
+    }
+
     class ImagesViewHolder extends RecyclerView.ViewHolder {
 
         private ItemImageBinding binding;

@@ -18,6 +18,9 @@ public class Company {
     @SerializedName("dateAdded")
     @Expose
     private String dateAdded;
+    @SerializedName("ignored")
+    @Expose
+    private boolean ignored;
 
     public int getId() {
         return id;
@@ -51,4 +54,11 @@ public class Company {
         this.dateAdded = dateAdded;
     }
 
+    public boolean isIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
+    }
 }

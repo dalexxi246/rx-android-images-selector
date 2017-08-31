@@ -3,4 +3,8 @@
     <string name="label_select">Select</string>
     <string name="label_ignore">Ignore</string>
     <string name="access_image">Image</string>
+    <string name="message_ok">OK</string>
+    <string name="message_invalid_host">Host invalid</string>
+    <string name="message_download_complete">Download Complete</string>
+    <string name="message_company_ignored">Ignored company</string>
 </resources>
