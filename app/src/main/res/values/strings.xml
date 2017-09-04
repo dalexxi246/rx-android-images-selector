@@ -1,8 +1,11 @@
 <resources>
     <string name="app_name">Image Selector</string>
-    <string name="label_select">Select</string>
-    <string name="label_ignore">Ignore</string>
     <string name="access_image">Image</string>
+    <string name="hint_valid_host_ip">Valid Host IP</string>
+    <string name="label_accept">Accept</string>
+    <string name="label_ignore">Ignore</string>
+    <string name="label_ok">OK</string>
+    <string name="label_select">Select</string>
     <string name="message_ok">OK</string>
     <string name="message_invalid_host">Host invalid</string>
     <string name="message_download_complete">Download Complete</string>
@@ -11,4 +14,5 @@
     <string name="message_ignore_fails">Can\'t ignore this Image: %s</string>
     <string name="message_get_configs_fails">Can\'t connect to host</string>
     <string name="message_get_pictures_fails">Can\'t get images</string>
+    <string name="message_invalid_ip">Direccion invalida</string>
 </resources>

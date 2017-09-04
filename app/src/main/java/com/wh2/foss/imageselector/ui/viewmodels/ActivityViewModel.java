@@ -27,18 +27,19 @@ public class ActivityViewModel extends ViewModel {
         progress = new ObservableInt(0);
     }
 
-    public Single<Config> getConfigurations() {
+    public Single<Config> getConfigurations(String endpointURL) {
         return ApiClient
-                .getAPI()
+                .getAPI(endpointURL)
                 .getConfigurations()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public Observable<Image> getPictures() {
+    public Observable<Image> getPictures(String endpointURL) {
         return ApiClient
-                .getAPI()
+                .getAPI(endpointURL)
                 .getPictures()
+                .toObservable()
                 .flatMap(Observable::fromIterable)
                 .filter(picture -> !picture.isIgnored())
                 .delay(100, TimeUnit.MILLISECONDS)

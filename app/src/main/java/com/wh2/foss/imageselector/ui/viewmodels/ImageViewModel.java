@@ -52,9 +52,9 @@ public class ImageViewModel extends ViewModel {
         return new ImagesDownloader(downloadPaths).getProgressStream();
     }
 
-    public Completable ignorePicture() {
+    public Completable ignorePicture(String endpointURL) {
         image.setIgnored(true);
-        return ApiClient.getAPI()
+        return ApiClient.getAPI(endpointURL)
                 .ignorePicture(image.getId(), image)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

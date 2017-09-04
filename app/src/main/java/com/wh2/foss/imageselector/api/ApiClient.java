@@ -6,21 +6,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
 
-    private static Retrofit retrofit;
-
-    private static Retrofit getInstance() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(ApiService.BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .build();
-        }
-        return retrofit;
+    private static Retrofit newInstance(String baseURL) {
+        return new Retrofit.Builder()
+                .baseUrl(baseURL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .build();
     }
 
-    public static ApiService getAPI() {
-        return getInstance().create(ApiService.class);
+    public static ApiService getAPI(String baseURL) {
+        return newInstance(baseURL).create(ApiService.class);
     }
 
 }
