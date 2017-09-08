@@ -15,4 +15,5 @@
     <string name="message_get_configs_fails">Can\'t connect to host</string>
     <string name="message_get_pictures_fails">Can\'t get images</string>
     <string name="message_invalid_ip">Direccion invalida</string>
+    <string name="permission_write_storage_denied">Para poder descargar archivos, concede el permiso</string>
 </resources>

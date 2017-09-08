@@ -3,6 +3,7 @@ package com.wh2.foss.imageselector;
 import android.app.Application;
 
 import com.androidnetworking.AndroidNetworking;
+import com.kingfisher.easy_sharedpreference_library.SharedPreferencesManager;
 
 public class ImagesSelectorApp extends Application {
 
@@ -10,5 +11,6 @@ public class ImagesSelectorApp extends Application {
     public void onCreate() {
         super.onCreate();
         AndroidNetworking.initialize(getApplicationContext());
+        SharedPreferencesManager.init(this, true);
     }
 }

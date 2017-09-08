@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -12,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.text.TextUtils;
 
+import com.kingfisher.easy_sharedpreference_library.SharedPreferencesManager;
 import com.wh2.foss.imageselector.R;
 import com.wh2.foss.imageselector.api.ApiService;
 import com.wh2.foss.imageselector.databinding.ActivityMainBinding;
@@ -24,6 +26,7 @@ import com.wh2.foss.imageselector.ui.viewmodels.ImageViewModel;
 import com.wh2.foss.imageselector.utils.FilesHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -32,20 +35,22 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 100;
 
+    private static final String KEY_PERMISSION_WRTIE_STORAGE = "permission_write_storage";
+
     ActivityViewModel activityViewModel;
-
     ActivityMainBinding activityMainBinding;
-
     ImagesAdapter adapter;
+
+    SharedPreferencesManager prefsManager;
+
     CompositeDisposable subscriptions = new CompositeDisposable();
 
     private boolean firstCall;
+    private boolean requestingPermissions;
 
     private String dirPath;
     private String fileName;
     private String endpointURL;
-
-    private int writeStoragePermissionCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +66,39 @@ public class MainActivity extends AppCompatActivity {
 
         endpointURL = ApiService.BASE_URL;
 
-        // checkPermissions();
+        prefsManager = SharedPreferencesManager.getInstance();
+
+        requestingPermissions = checkingPermissions();
     }
 
-    private void checkPermissions() {
-        writeStoragePermissionCheck = ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (!hasPermissionsGranted()) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
+    private boolean checkingPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+        if (!hasGrantedWriteStoragePermission()) {
+            permissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(this, permissionsNeeded.toArray
+                    (new String[permissionsNeeded.size()]), MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasGrantedWriteStoragePermission() {
+        int writeStorage = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        prefsManager.putValue(KEY_PERMISSION_WRTIE_STORAGE, writeStorage == PackageManager.PERMISSION_GRANTED);
+        return prefsManager.getValue(KEY_PERMISSION_WRTIE_STORAGE, Boolean.class);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_STORAGE:
+                prefsManager.putValue(KEY_PERMISSION_WRTIE_STORAGE, grantResults[0] == PackageManager.PERMISSION_GRANTED);
+                break;
+        }
+        requestingPermissions = false;
+        loadData();
     }
 
     @Override
@@ -87,10 +114,6 @@ public class MainActivity extends AppCompatActivity {
         firstCall = true;
     }
 
-    private boolean hasPermissionsGranted() {
-        return writeStoragePermissionCheck == PackageManager.PERMISSION_GRANTED;
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -98,18 +121,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        Disposable loadDataSubscription = activityViewModel.getConfigurations(endpointURL).subscribe(
-                config -> {
-                    setRecyclerView(config);
-                    subscriptions.add(activityViewModel.getPictures(endpointURL).subscribe(
-                            this::updateRecyclerView,
-                            this::onError)
-                    );
-                }, throwable -> getNewHost());
-        if (!loadDataSubscription.isDisposed()) {
-            subscriptions.delete(loadDataSubscription);
+        if (!requestingPermissions) {
+            Disposable loadDataSubscription = activityViewModel.getConfigurations(endpointURL).subscribe(
+                    config -> {
+                        setRecyclerView(config);
+                        subscriptions.add(activityViewModel.getPictures(endpointURL).subscribe(
+                                this::updateRecyclerView,
+                                this::onError)
+                        );
+                    }, throwable -> getNewHost());
+            if (!loadDataSubscription.isDisposed()) {
+                subscriptions.delete(loadDataSubscription);
+            }
+            subscriptions.add(loadDataSubscription);
         }
-        subscriptions.add(loadDataSubscription);
     }
 
     private void getNewHost() {
@@ -152,16 +177,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pictureSelected(ImageViewModel imageViewModel) {
-        Disposable downloadPicture = imageViewModel.performDownload(dirPath, fileName).subscribe(
-                this::setupProgress,
-                this::onError,
-                this::onDownloadComplete,
-                disposable -> showMessage(getString(R.string.message_download_started))
-        );
-        if (!downloadPicture.isDisposed()) {
-            subscriptions.delete(downloadPicture);
+        if (prefsManager.getValue(KEY_PERMISSION_WRTIE_STORAGE, Boolean.class)) {
+            Disposable downloadPicture = imageViewModel.performDownload(dirPath, fileName).subscribe(
+                    this::setupProgress,
+                    this::onError,
+                    this::onDownloadComplete,
+                    disposable -> showMessage(getString(R.string.message_download_started))
+            );
+            if (!downloadPicture.isDisposed()) {
+                subscriptions.delete(downloadPicture);
+            }
+            subscriptions.add(downloadPicture);
+        } else {
+            Snackbar.make(activityMainBinding.getRoot(), getString(R.string.permission_write_storage_denied), Snackbar.LENGTH_LONG).show();
         }
-        subscriptions.add(downloadPicture);
     }
 
     private void onError(Throwable throwable) {
