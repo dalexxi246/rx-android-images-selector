@@ -17,11 +17,11 @@
         <activity android:name=".ui.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="com.wh2.fingerprint.TAKE" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.HostActivity"></activity>
+        <activity android:name=".ui.activities.HostActivity" />
     </application>
 
 </manifest>

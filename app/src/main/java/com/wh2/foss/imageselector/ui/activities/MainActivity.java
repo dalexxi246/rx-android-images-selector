@@ -36,14 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 100;
 
     private static final String KEY_PERMISSION_WRTIE_STORAGE = "permission_write_storage";
-
-    ActivityViewModel activityViewModel;
-    ActivityMainBinding activityMainBinding;
-    ImagesAdapter adapter;
-
-    SharedPreferencesManager prefsManager;
-
-    CompositeDisposable subscriptions = new CompositeDisposable();
+    private static final String FILENAME = "com.wh2.fingerprint.TAKE.FILENAME";
 
     private boolean firstCall;
     private boolean requestingPermissions;
@@ -52,17 +45,29 @@ public class MainActivity extends AppCompatActivity {
     private String fileName;
     private String endpointURL;
 
+    private ActivityViewModel viewModel;
+    private ActivityMainBinding binding;
+    private Bundle extras;
+    private ImagesAdapter adapter;
+    private SharedPreferencesManager prefsManager;
+
+    private CompositeDisposable subscriptions = new CompositeDisposable();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        activityViewModel = new ActivityViewModel(this);
-        activityMainBinding.setVm(activityViewModel);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        viewModel = new ActivityViewModel(this);
+        binding.setVm(viewModel);
 
-        dirPath = new FilesHelper(this).getDirectoryPath();
-        fileName = "foss_image.jpg";
+        Intent intent = getIntent();
+        extras = intent.getExtras();
+
+        FilesHelper filesHelper = new FilesHelper(this);
+        dirPath = filesHelper.getDirectoryPath();
+        fileName = getImageFileName();
 
         endpointURL = ApiService.BASE_URL;
 
@@ -71,11 +76,24 @@ public class MainActivity extends AppCompatActivity {
         requestingPermissions = checkingPermissions();
     }
 
+    private int getIdForFilename() {
+        return extras != null ? extras.getInt(FILENAME) : 0;
+    }
+
+    @NonNull
+    private String getImageFileName() {
+        return String.valueOf(getIdForFilename()).concat(".jpg");
+    }
+
     private boolean checkingPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
         if (!hasGrantedWriteStoragePermission()) {
             permissionsNeeded.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        return requestPermissionsNeeded(permissionsNeeded);
+    }
+
+    private boolean requestPermissionsNeeded(List<String> permissionsNeeded) {
         if (!permissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this, permissionsNeeded.toArray
                     (new String[permissionsNeeded.size()]), MY_PERMISSIONS_REQUEST_WRITE_STORAGE);
@@ -122,10 +140,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadData() {
         if (!requestingPermissions) {
-            Disposable loadDataSubscription = activityViewModel.getConfigurations(endpointURL).subscribe(
+            Disposable loadDataSubscription = viewModel.getConfigurations(endpointURL).subscribe(
                     config -> {
                         setRecyclerView(config);
-                        subscriptions.add(activityViewModel.getPictures(endpointURL).subscribe(
+                        subscriptions.add(viewModel.getPictures(endpointURL).subscribe(
                                 this::updateRecyclerView,
                                 this::onError)
                         );
@@ -145,29 +163,39 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == HostActivity.ACTION_RETRIEVE_HOST) {
-            if (resultCode == RESULT_OK) {
-                endpointURL = newURLFromExtras(data);
-                if (!TextUtils.isEmpty(endpointURL)) {
-                    loadData();
-                } else {
-                    finish();
-                }
-            } else {
-                finish();
-            }
+            manageHostRetrieved(resultCode, data);
         }
     }
 
-    private String newURLFromExtras(Intent extras) {
-        return extras != null && extras.getExtras() != null ? extras.getExtras().getString(HostActivity.RETURN_HOST) : "";
+    private void manageHostRetrieved(int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            endpointURL = newURLFromExtras(data);
+            if (!TextUtils.isEmpty(endpointURL)) {
+                loadData();
+            } else {
+                returnCanceled();
+            }
+        } else {
+            returnCanceled();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        returnCanceled();
+    }
+
+    private String newURLFromExtras(Intent intent) {
+        return intent != null && intent.getExtras() != null ? intent.getExtras().getString(HostActivity.RETURN_HOST) : "";
     }
 
     private void setRecyclerView(Config config) {
-        activityMainBinding.recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         adapter = new ImagesAdapter(new ArrayList<>(), config, this);
         subscriptions.add(adapter.imageSelected().subscribe(this::pictureSelected));
-        subscriptions.add(adapter.imageIgnored().subscribe(this::pictureIgnored));
-        activityMainBinding.recyclerView.setAdapter(adapter);
+        subscriptions.add(adapter.imageIgnored().subscribe(this::onPictureIgnored));
+        binding.recyclerView.setAdapter(adapter);
     }
 
     private void updateRecyclerView(Image image) {
@@ -182,33 +210,37 @@ public class MainActivity extends AppCompatActivity {
                     this::setupProgress,
                     this::onError,
                     this::onDownloadComplete,
-                    disposable -> showMessage(getString(R.string.message_download_started))
+                    disposable -> onDownloadStarted()
             );
             if (!downloadPicture.isDisposed()) {
                 subscriptions.delete(downloadPicture);
             }
             subscriptions.add(downloadPicture);
         } else {
-            Snackbar.make(activityMainBinding.getRoot(), getString(R.string.permission_write_storage_denied), Snackbar.LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), getString(R.string.permission_write_storage_denied), Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    private void onDownloadStarted() {
+        showMessage(getString(R.string.message_download_started));
     }
 
     private void onError(Throwable throwable) {
         if (!TextUtils.isEmpty(throwable.getLocalizedMessage())) {
-            Snackbar.make(activityMainBinding.getRoot(), throwable.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), throwable.getLocalizedMessage(), Snackbar.LENGTH_LONG).show();
         }
     }
 
     private void setupProgress(Progress progress) {
-        activityViewModel.setProgress(progress.getPercentDownloaded());
+        viewModel.setProgress(progress.getPercentDownloaded());
     }
 
     private void onDownloadComplete() {
-        activityViewModel.progressShowing.set(false);
-        showMessage(getString(R.string.message_download_complete));
+        viewModel.progressShowing.set(false);
+        returnFilenamePath();
     }
 
-    private void pictureIgnored(ImageViewModel imageViewModel) {
+    private void onPictureIgnored(ImageViewModel imageViewModel) {
         subscriptions.add(imageViewModel.ignorePicture(endpointURL).subscribe(() -> {
             loadData();
             showMessage(getString(R.string.message_picture_ignored));
@@ -216,7 +248,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessage(String message) {
-        Snackbar.make(activityMainBinding.getRoot(), message, Snackbar.LENGTH_LONG).show();
+        Snackbar.make(binding.getRoot(), message, Snackbar.LENGTH_LONG).show();
     }
+
+    private void returnFilenamePath() {
+        Intent i = new Intent();
+        i.putExtra(Intent.EXTRA_RETURN_RESULT, getSavedImageAbsolutePath());
+        setResult(RESULT_OK, i);
+        finish();
+    }
+
+    private void returnCanceled() {
+        setResult(RESULT_CANCELED);
+        finish();
+    }
+
+    private String getSavedImageAbsolutePath() {
+        return dirPath.concat(getImageFileName());
+    }
+
 }
 
