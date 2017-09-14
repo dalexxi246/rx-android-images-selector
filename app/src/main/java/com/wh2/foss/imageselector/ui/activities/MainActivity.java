@@ -76,13 +76,13 @@ public class MainActivity extends AppCompatActivity {
         requestingPermissions = checkingPermissions();
     }
 
-    private int getIdForFilename() {
-        return extras != null ? extras.getInt(FILENAME) : 0;
+    private String getIdForFilename() {
+        return extras != null ? extras.getString(FILENAME) : "no_id";
     }
 
     @NonNull
     private String getImageFileName() {
-        return String.valueOf(getIdForFilename()).concat(".jpg");
+        return getIdForFilename().concat(".jpg");
     }
 
     private boolean checkingPermissions() {
